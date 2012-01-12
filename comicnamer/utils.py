@@ -18,14 +18,14 @@ import shutil
 import logging
 import platform
 
-from comicvine_api import (comicvine_error, comicvine_seriesnotfound,
+from comicvine_api import (comicvine_error, comicvine_volumenotfound,
 comicvine_issuenotfound, comicvine_attributenotfound, comicvine_userabort)
 
 from unicode_helper import p
 
 from config import Config
 from comicnamer_exceptions import (InvalidPath, InvalidFilename,
-SeriesNotFound, DataRetrievalError, IssueNotFound,
+volumeNotFound, DataRetrievalError, IssueNotFound,
 IssueNameNotFound, ConfigValueError, UserAbort)
 
 
@@ -43,35 +43,35 @@ def warn(text):
 
 def getIssueName(comicvine_instance, issue):
     """Queries the comicvine_api.Comicvine instance for issue name and corrected
-    series name.
-    If series cannot be found, it will warn the user. If the issue is not
-    found, it will use the corrected series name and not set an issue name.
+    volume name.
+    If volume cannot be found, it will warn the user. If the issue is not
+    found, it will use the corrected volume name and not set an issue name.
     If the site is unreachable, it will warn the user. If the user aborts
     it will catch comicvine_api's user abort error and raise comicnamer's
     """
     try:
-        series = comicvine_instance[issue.seriesname]
+        volume = comicvine_instance[issue.volumename]
     except comicvine_error, errormsg:
         raise DataRetrievalError("Error contacting www.comicvine.com: %s" % errormsg)
-    except comicvine_seriesnotfound:
-        # No such series found.
-        raise SeriesNotFound("Series %s not found on www.comicvine.com" % issue.seriesname)
+    except comicvine_volumenotfound:
+        # No such volume found.
+        raise volumeNotFound("volume %s not found on www.comicvine.com" % issue.volumename)
     except comicvine_userabort, error:
         raise UserAbort(unicode(error))
     else:
-        # Series was found, use corrected series name
-        correctedSeriesName = series['seriesname']
+        # volume was found, use corrected volume name
+        correctedvolumeName = volume['volumename']
 
     issnames = []
     for cissno in issue.issuenumbers:
         try:
-            issueinfo = series[cissno]
+            issueinfo = volume[cissno]
 
         except comicvine_issuenotfound:
             raise IssueNotFound(
-                "Issue %s of series %s could not be found" % (
+                "Issue %s of volume %s could not be found" % (
                     cissno,
-                    issue.seriesname))
+                    issue.volumename))
 
         except comicvine_attributenotfound:
             raise IssueNameNotFound(
@@ -79,7 +79,7 @@ def getIssueName(comicvine_instance, issue):
         else:
             issnames.append(issueinfo['issuename'])
 
-    return correctedSeriesName, issnames
+    return correctedvolumeName, issnames
 
 
 def _applyReplacements(cfile, replacements):
@@ -117,24 +117,24 @@ def applyCustomFullpathReplacements(cfile):
     return _applyReplacements(cfile, Config['move_files_fullpath_replacements'])
 
 
-def cleanRegexedSeriesName(seriesname):
-    """Cleans up series name by removing any . and _
+def cleanRegexedvolumeName(volumename):
+    """Cleans up volume name by removing any . and _
     characters, along with any trailing hyphens.
 
     Is basically equivalent to replacing all _ and . with a
     space, but handles decimal numbers in string, for example:
 
-    >>> cleanRegexedSeriesName("an.example.1.0.test")
+    >>> cleanRegexedvolumeName("an.example.1.0.test")
     'an example 1.0 test'
-    >>> cleanRegexedSeriesName("an_example_1.0_test")
+    >>> cleanRegexedvolumeName("an_example_1.0_test")
     'an example 1.0 test'
     """
-    seriesname = re.sub("(\D)[.](\D)", "\\1 \\2", seriesname)
-    seriesname = re.sub("(\D)[.]", "\\1 ", seriesname)
-    seriesname = re.sub("[.](\D)", " \\1", seriesname)
-    seriesname = seriesname.replace("_", " ")
-    seriesname = re.sub("-$", "", seriesname)
-    return seriesname.strip()
+    volumename = re.sub("(\D)[.](\D)", "\\1 \\2", volumename)
+    volumename = re.sub("(\D)[.]", "\\1 ", volumename)
+    volumename = re.sub("[.](\D)", " \\1", volumename)
+    volumename = volumename.replace("_", " ")
+    volumename = re.sub("-$", "", volumename)
+    return volumename.strip()
 
 
 class FileFinder(object):
@@ -274,17 +274,17 @@ class FileParser(object):
                         "issuenumberstart and issuenumberend\n\nPattern"
                         "was:\n" + cmatcher.pattern)
 
-                if 'seriesname' in namedgroups:
-                    seriesname = match.group('seriesname')
+                if 'volumename' in namedgroups:
+                    volumename = match.group('volumename')
                 else:
                     raise ConfigValueError(
-                        "Regex must contain seriesname. Pattern was:\n" + cmatcher.pattern)
+                        "Regex must contain volumename. Pattern was:\n" + cmatcher.pattern)
 
-                if seriesname != None:
-                    seriesname = cleanRegexedSeriesName(seriesname)
+                if volumename != None:
+                    volumename = cleanRegexedvolumeName(volumename)
 
                 issue = IssueInfo(
-                    seriesname = seriesname,
+                    volumename = volumename,
                     issuenumbers = issuenumbers,
                     filename = self.path)
                 return issue
@@ -435,12 +435,12 @@ class IssueInfo(object):
     """
 
     def __init__(self,
-        seriesname = None,
+        volumename = None,
         issuenumbers= None,
         issuename = None,
         filename = None):
 
-        self.seriesname = seriesname
+        self.volumename = volumename
         self.issuenumbers = issuenumbers
         self.issuename = issuename
         self.fullpath = filename
@@ -481,7 +481,7 @@ class IssueInfo(object):
             prep_extension = '.%s' % self.extension
 
         issdata = {
-            'seriesname': self.seriesname,
+            'volumename': self.volumename,
             'issue': issno,
             'issuename': self.issuename,
             'ext': prep_extension}

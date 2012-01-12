@@ -28,7 +28,7 @@ from utils import (Config, FileFinder, FileParser, Renamer, warn,
 getIssueName, applyCustomInputReplacements, applyCustomOutputReplacements,
 formatIssueNumbers, makeValidFilename)
 
-from comicnamer_exceptions import (SeriesNotFound, IssueNotFound,
+from comicnamer_exceptions import (volumeNotFound, IssueNotFound,
 IssueNameNotFound, UserAbort, InvalidPath, NoValidFilesFoundError,
 InvalidFilename, DataRetrievalError)
 
@@ -43,9 +43,9 @@ def getDestinationFolder(issue):
     """Constructs the location to move/copy the file
     """
 
-    # Calls makeValidFilename on series name, as it must valid for a filename
+    # Calls makeValidFilename on volume name, as it must valid for a filename
     destdir = Config['move_files_destination'] % {
-        'seriesname': makeValidFilename(issue.seriesname),
+        'volumename': makeValidFilename(issue.volumename),
         'issuenumbers': makeValidFilename(formatIssueNumbers(issue.issuenumbers))
     }
     return destdir
@@ -114,28 +114,28 @@ def processFile(comicvine_instance, issue):
         replaced = applyCustomInputReplacements(issue.fullfilename)
         p("# With custom replacements: %s" % (replaced))
 
-    p("# Detected series: %s (issue: %s)" % (
-        issue.seriesname,
+    p("# Detected volume: %s (issue: %s)" % (
+        issue.volumename,
         ", ".join([str(x) for x in issue.issuenumbers])))
 
     try:
-        correctedSeriesName, issName = getIssueName(comicvine_instance, issue)
-    except (DataRetrievalError, SeriesNotFound), errormsg:
+        correctedvolumeName, issName = getIssueName(comicvine_instance, issue)
+    except (DataRetrievalError, volumeNotFound), errormsg:
         if Config['always_rename'] and Config['skip_file_on_error'] is True:
             warn("Skipping file due to error: %s" % errormsg)
             return
         else:
             warn(errormsg)
     except (IssueNotFound, IssueNameNotFound), errormsg:
-        # Series was found, so use corrected series name
+        # volume was found, so use corrected volume name
         if Config['always_rename'] and Config['skip_file_on_error'] is True:
             warn("Skipping file due to error: %s" % errormsg)
             return
 
         warn(errormsg)
-        issue.seriesname = correctedSeriesName
+        issue.volumename = correctedvolumeName
     else:
-        issue.seriesname = correctedSeriesName
+        issue.volumename = correctedvolumeName
         issue.issuename = issName
 
     cnamer = Renamer(issue.fullpath)
@@ -253,8 +253,8 @@ def comicnamer(paths):
 
     p("# Found %d issue" % len(issues_found) + ("s" * (len(issues_found) > 1)))
 
-    # Sort issues by series name and issue number
-    issues_found.sort(key = lambda x: (x.seriesname, x.issuenumbers))
+    # Sort issues by volume name and issue number
+    issues_found.sort(key = lambda x: (x.volumename, x.issuenumbers))
 
     comicvine_instance = Comicvine(
         interactive=not Config['select_first'])
@@ -323,7 +323,7 @@ def main():
 
         opter.exit(0)
 
-    # Series config argument
+    # volume config argument
     if opts.showconfig:
         for k, v in opts.__dict__.items():
             p(k, "=", str(v))
