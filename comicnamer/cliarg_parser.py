@@ -42,10 +42,10 @@ def getCommandlineParser(defaults):
 
     # Batch options
     with Group(parser, "Batch options") as g:
-        g.add_option("-a", "--always", action="store_true", dest="always_rename", help = "Always renames files (but prompt for correct series)")
+        g.add_option("-a", "--always", action="store_true", dest="always_rename", help = "Always renames files (but prompt for correct volume)")
         g.add_option("--not-always", action="store_true", dest="always_rename", help = "Overrides --always")
 
-        g.add_option("-f", "--selectfirst", action="store_true", dest="select_first", help = "Select first series search result automatically")
+        g.add_option("-f", "--selectfirst", action="store_true", dest="select_first", help = "Select first volume search result automatically")
         g.add_option("--not-selectfirst", action="store_false", dest="select_first", help = "Overrides --selectfirst")
 
         g.add_option("-b", "--batch", action="store_true", dest = "batch", help = "Rename without human intervention, same as --always and --selectfirst combined")
@@ -66,7 +66,7 @@ def getCommandlineParser(defaults):
         g.add_option("-m", "--move", action="store_true", dest="move_files_enable", help = "Move files to destination specified in config or with --movedestination argument")
         g.add_option("--not-move", action="store_false", dest="move_files_enable", help = "Files will remain in current directory")
 
-        g.add_option("-d", "--movedestination", action="store", dest = "move_files_destination", help = "Destination to move files to. Variables: %(seriesname)s %(episodenumbers)s")
+        g.add_option("-d", "--movedestination", action="store", dest = "move_files_destination", help = "Destination to move files to. Variables: %(volumename)s %(episodenumbers)s")
 
         g.add_option("-h", "--help", action="help", help = "show this help message and exit")
 

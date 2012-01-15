@@ -58,8 +58,8 @@ class DataRetrievalError(BaseComicnamerException):
     """
 
 
-class SeriesNotFound(DataRetrievalError):
-    """Raised when a series cannot be found
+class volumeNotFound(DataRetrievalError):
+    """Raised when a volume cannot be found
     """
     pass
 

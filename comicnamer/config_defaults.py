@@ -10,7 +10,7 @@ Modified from http://github.com/dbr/tvnamer
 """
 
 defaults = {
-    # Select first series search result
+    # Select first volume search result
     'select_first': False,
 
     # Always rename files
@@ -70,7 +70,7 @@ defaults = {
     # not move the file anywhere.
     #
     # Use Python's string formatting to add dynamic paths. Available variables:
-    # - %(seriesname)s
+    # - %(volumename)s
     # - %(seasonnumber)d
     # - %(issuenumbers)s (Note: this is a string, formatted with config
     #                       variable issue_single and joined with issue_separator)
@@ -78,23 +78,23 @@ defaults = {
 
     # Patterns to parse input filenames with
     'filename_patterns': [
-        # [group] Series - 01-02 [Etc]
+        # [group] volume - 01-02 [Etc]
         '''^\[.+?\][ ]? # group name
-        (?P<seriesname>.*?)[ ]?[-_][ ]?          # show name, padding, spaces?
+        (?P<volumename>.*?)[ ]?[-_][ ]?          # show name, padding, spaces?
         (?P<issuenumberstart>\d+)              # first issue number
         ([-_]\d+)*                               # optional repeating issues
         [-_](?P<issuenumberend>\d+)            # last issue number
         [^\/]*$''',
 
-        # [group] Series - 01 [Etc]
+        # [group] volume - 01 [Etc]
         '''^\[.+?\][ ]? # group name
-        (?P<seriesname>.*) # show name
+        (?P<volumename>.*) # show name
         [ ]?[-_][ ]?(?P<issuenumber>\d+)
         [^\/]*$''',
 
         # foo s01e23 s01e24 s01e25 *
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         [Ss](?P<seasonnumber>[0-9]+)             # s01
         [\.\- ]?                                 # separator
         [Ee](?P<issuenumberstart>[0-9]+)       # first e23
@@ -110,7 +110,7 @@ defaults = {
 
         # foo.s01e23e24*
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         [Ss](?P<seasonnumber>[0-9]+)             # s01
         [\.\- ]?                                 # separator
         [Ee](?P<issuenumberstart>[0-9]+)       # first e23
@@ -121,7 +121,7 @@ defaults = {
 
         # foo.1x23 1x24 1x25
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         (?P<seasonnumber>[0-9]+)                 # first season number (1)
         [xX](?P<issuenumberstart>[0-9]+)       # first issue (x23)
         ([ \._\-]+                               # separator
@@ -134,7 +134,7 @@ defaults = {
 
         # foo.1x23x24*
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         (?P<seasonnumber>[0-9]+)                 # 1
         [xX](?P<issuenumberstart>[0-9]+)       # first x23
         ([xX][0-9]+)*                            # x24x25 etc
@@ -143,7 +143,7 @@ defaults = {
 
         # foo.s01e23-24*
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         [Ss](?P<seasonnumber>[0-9]+)             # s01
         [\.\- ]?                                 # separator
         [Ee](?P<issuenumberstart>[0-9]+)       # first e23
@@ -158,7 +158,7 @@ defaults = {
 
         # foo.1x23-24*
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?          # show name
+        ^((?P<volumename>.+?)[ \._\-])?          # show name
         (?P<seasonnumber>[0-9]+)                 # 1
         [xX](?P<issuenumberstart>[0-9]+)       # first x23
         (                                        # -24 etc
@@ -171,7 +171,7 @@ defaults = {
         $)''',
 
         # foo.[1x09-11]*
-        '''^(?P<seriesname>.+?)[ \._\-]          # show name and padding
+        '''^(?P<volumename>.+?)[ \._\-]          # show name and padding
         \[                                       # [
             ?(?P<seasonnumber>[0-9]+)            # season
         [xX]                                     # x
@@ -183,14 +183,14 @@ defaults = {
         [^\\/]*$''',
 
         # foo.s0101, foo.0201
-        '''^(?P<seriesname>.+?)[ \._\-]
+        '''^(?P<volumename>.+?)[ \._\-]
         [Ss](?P<seasonnumber>[0-9]{2})
         [\.\- ]?
         (?P<issuenumber>[0-9]{2})
         [^0-9]*$''',
 
         # foo.1x09*
-        '''^((?P<seriesname>.+?)[ \._\-])?       # show name and padding
+        '''^((?P<volumename>.+?)[ \._\-])?       # show name and padding
         \[?                                      # [ optional
         (?P<seasonnumber>[0-9]+)                 # season
         [xX]                                     # x
@@ -199,14 +199,14 @@ defaults = {
         [^\\/]*$''',
 
         # foo.s01.e01, foo.s01_e01
-        '''^((?P<seriesname>.+?)[ \._\-])?
+        '''^((?P<volumename>.+?)[ \._\-])?
         [Ss](?P<seasonnumber>[0-9]+)[\.\- ]?
         [Ee]?(?P<issuenumber>[0-9]+)
         [^\\/]*$''',
 
         # foo.2010.01.02.etc
         '''
-        ^((?P<seriesname>.+?)[ \._\-])?         # show name
+        ^((?P<volumename>.+?)[ \._\-])?         # show name
         (?P<year>\d{4})                          # year
         [ \._\-]                                 # separator
         (?P<month>\d{2})                         # month
@@ -215,14 +215,14 @@ defaults = {
         [^\/]*$''',
 
         # Foo - S2 E 02 - etc
-        '''^(?P<seriesname>.+?)[ ]?[ \._\-][ ]?
+        '''^(?P<volumename>.+?)[ ]?[ \._\-][ ]?
         [Ss](?P<seasonnumber>[0-9]+)[\.\- ]?
         [Ee]?[ ]?(?P<issuenumber>[0-9]+)
         [^\\/]*$''',
 
-        # Series - issue 9999 [S 12 - Ep 131] - etc
+        # volume - issue 9999 [S 12 - Ep 131] - etc
         '''
-        (?P<seriesname>.+)                       # Seriesname
+        (?P<volumename>.+)                       # volumename
         [ ]-[ ]                                  # -
         [Ee]pisode[ ]\d+                         # issue 1234 (ignored)
         [ ]
@@ -235,19 +235,19 @@ defaults = {
         ''',
 
         # foo.103*
-        '''^(?P<seriesname>.+)[ \._\-]
+        '''^(?P<volumename>.+)[ \._\-]
         (?P<seasonnumber>[0-9]{1})
         (?P<issuenumber>[0-9]{2})
         [\._ -][^\\/]*$''',
 
         # foo.0103*
-        '''^(?P<seriesname>.+)[ \._\-]
+        '''^(?P<volumename>.+)[ \._\-]
         (?P<seasonnumber>[0-9]{2})
         (?P<issuenumber>[0-9]{2,3})
         [\._ -][^\\/]*$''',
 
         # show.name.e123.abc
-        '''^(?P<seriesname>.+?)                  # Series name
+        '''^(?P<volumename>.+?)                  # volume name
         [ \._\-]                                 # Padding
         [Ee](?P<issuenumber>[0-9]+)            # E123
         [\._ -][^\\/]*$                          # More padding, then anything
@@ -258,13 +258,13 @@ defaults = {
     # Formats for renamed files. Variations for with/without issue,
     # and with/without season number.
     'filename_with_issue':
-     '%(seriesname)s - [%(seasonno)02dx%(issue)s] - %(issuename)s%(ext)s',
+      '%(volumename)s - [%(issue)s] - %(issuename)s%(ext)s',
     'filename_without_issue':
-     '%(seriesname)s - [%(seasonno)02dx%(issue)s]%(ext)s',
+     '%(volumename)s - [%(seasonno)02dx%(issue)s]%(ext)s',
      'filename_with_issue_no_season':
-      '%(seriesname)s - [%(issue)s] - %(issuename)s%(ext)s',
+      '%(volumename)s - [%(issue)s] - %(issuename)s%(ext)s',
      'filename_without_issue_no_season':
-      '%(seriesname)s - [%(issue)s]%(ext)s',
+      '%(volumename)s - [%(issue)s]%(ext)s',
 
     # Used to join multiple issue names together
     'multiiss_join_name_with': ', ',
